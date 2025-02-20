@@ -33,7 +33,11 @@ export default async function handler(req, res) {
                 }
             });
             if (!githubResponse.ok) {
-                throw new Error(`GitHub API responded with status ${githubResponse.status}`);
+                if (githubResponse.status === 404) {
+                    console.log('GitHub file not found, creating a new one.');
+                } else {
+                    throw new Error(`GitHub API responded with status ${githubResponse.status}`);
+                }
             }
             const githubData = await githubResponse.json();
             const sha = githubData.sha;
