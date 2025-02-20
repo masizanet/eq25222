@@ -4,32 +4,25 @@ import Gun from 'gun';
 
 export default async function handler(req, res) {
     const gun = Gun();
-    const filePath = path.join('/tmp', 'merged-posts.json');
+    const posts = [];
 
     try {
         // Load posts from Gun
-        const gunPosts = [];
         gun.get('posts').map().once((post, id) => {
             if (post) {
-                gunPosts.push({ ...post, id });
+                posts.push({ ...post, id });
             }
         });
 
-        // Load posts from server-side file
-        const data = await fs.readFile(filePath, 'utf8').catch(() => '[]');
-        const serverPosts = JSON.parse(data);
+        // Wait for posts to be loaded
+        setTimeout(async () => {
+            // Save merged posts to Gun
+            posts.forEach(post => {
+                gun.get('mergedPosts').get(post.id).put(post);
+            });
 
-        // Merge posts
-        const mergedPosts = [...serverPosts, ...gunPosts];
-
-        // Remove duplicates
-        const uniquePosts = Array.from(new Set(mergedPosts.map(post => post.id)))
-            .map(id => mergedPosts.find(post => post.id === id));
-
-        // Save merged posts to server-side file
-        await fs.writeFile(filePath, JSON.stringify(uniquePosts, null, 2));
-
-        res.status(200).json({ message: 'Posts merged' });
+            res.status(200).json({ message: 'Posts merged' });
+        }, 1000);
     } catch (error) {
         res.status(500).json({ message: 'Error merging posts', error: error.message });
     }

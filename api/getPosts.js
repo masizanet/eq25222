@@ -1,12 +1,20 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import Gun from 'gun';
 
 export default async function handler(req, res) {
-    const filePath = path.join('/tmp', 'merged-posts.json');
+    const gun = Gun();
+    const posts = [];
+
     try {
-        const data = await fs.readFile(filePath, 'utf8').catch(() => '[]');
-        const posts = JSON.parse(data);
-        res.status(200).json(posts);
+        gun.get('posts').map().once((post, id) => {
+            if (post) {
+                posts.push({ ...post, id });
+            }
+        });
+
+        // Wait for posts to be loaded
+        setTimeout(() => {
+            res.status(200).json(posts);
+        }, 1000);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching posts', error: error.message });
     }
