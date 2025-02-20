@@ -9,7 +9,7 @@ export default async function handler(req, res) {
         try {
             const post = req.body;
             const gun = Gun();
-            const id = Gun.text.random();
+            const id = Date.now().toString();
             gun.get('posts').get(id).put(post);
 
             // Save post to /tmp directory

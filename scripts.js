@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const nicknames = new Set();
     const postsMap = new Map();
 
+    // Load saved nickname
+    const savedNickname = localStorage.getItem('nickname');
+    if (savedNickname) {
+        document.getElementById('nickname').value = savedNickname;
+    }
+
     // Load posts from Gun and listen for new posts
     gun.get('posts').map().on((post, id) => {
         if (post) {
@@ -19,17 +25,20 @@ document.addEventListener('DOMContentLoaded', () => {
         let nickname = nicknameInput.value.trim();
         const postContent = postContentInput.value.trim();
 
+        // Save nickname to local storage
+        localStorage.setItem('nickname', nickname);
+
         if (nicknames.has(nickname)) {
             nickname = `${nickname}_${Math.floor(Math.random() * 1000)}`;
-            alert(`Nickname already taken. Suggested nickname: ${nickname}`);
+            alert(`닉네임이 이미 사용 중입니다. 추천 닉네임: ${nickname}`);
         }
 
         nicknames.add(nickname);
-        const post = { nickname, content: postContent, timestamp: Date.now() };
+        const timestamp = Date.now();
+        const post = { nickname, content: postContent, timestamp };
 
         // Save post to Gun
-        const id = Gun.text.random();
-        gun.get('posts').get(id).put(post);
+        gun.get('posts').get(timestamp).put(post);
         nicknameInput.value = '';
         postContentInput.value = '';
     });
@@ -42,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         postItem.textContent = `${post.nickname}: ${post.content}`;
         postItem.dataset.id = post.id;
         postItem.addEventListener('click', () => {
-            if (confirm('Do you want to delete this post?')) {
+            if (confirm('이 게시물을 삭제하시겠습니까?')) {
                 deletePost(post.id);
             }
         });

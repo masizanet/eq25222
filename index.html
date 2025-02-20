@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anonymous Post Sharing</title>
+    <title>익명 게시판</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="app">
-        <h1>Anonymous Post Sharing</h1>
+        <h1>익명 게시판</h1>
         <form id="postForm">
-            <input type="text" id="nickname" placeholder="Nickname" maxlength="20" required>
-            <input type="text" id="postContent" placeholder="Your post (max 50 chars)" maxlength="50" required>
-            <button type="submit">Post</button>
+            <input type="text" id="nickname" placeholder="닉네임" maxlength="20" required>
+            <input type="text" id="postContent" placeholder="내용 (최대 50자)" maxlength="50" required>
+            <button type="submit">게시</button>
         </form>
         <ul id="postsList"></ul>
     </div>
