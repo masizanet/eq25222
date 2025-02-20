@@ -10,7 +10,16 @@ export default async function handler(req, res) {
             const posts = JSON.parse(data);
             posts.push(post);
             await fs.writeFile(filePath, JSON.stringify(posts, null, 2));
-            res.status(200).json({ message: 'Post saved' });
+
+            // Call the merge function
+            await fetch('/api/mergePosts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            res.status(200).json({ message: 'Post saved and merge triggered' });
         } catch (error) {
             res.status(500).json({ message: 'Error saving post', error: error.message });
         }
