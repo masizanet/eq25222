@@ -1,12 +1,6 @@
 {
   "name": "equal-korea",
   "version": "0.0.1",
-  "main": "index.js",
-  "scripts": {
-    "dev": "node index.js",
-    "build": "node index.js",
-    "start": "node index.js"
-  },
   "dependencies": {
     "gun": "^0.2020.1234"
   }
