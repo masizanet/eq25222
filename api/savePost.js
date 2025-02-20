@@ -29,6 +29,9 @@ export default async function handler(req, res) {
                     'Authorization': `token ${githubToken}`
                 }
             });
+            if (!githubResponse.ok) {
+                throw new Error(`GitHub API responded with status ${githubResponse.status}`);
+            }
             const githubData = await githubResponse.json();
             const sha = githubData.sha;
 

@@ -43,9 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
         postContentInput.value = '';
 
         // Fetch and log data from getPosts
-        const response = await fetch('/api/getPosts');
-        const data = await response.json();
-        console.log('Fetched Posts:', data);
+        try {
+            const response = await fetch('/api/getPosts');
+            if (!response.ok) {
+                throw new Error(`Server responded with status ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('Fetched Posts:', data);
+        } catch (error) {
+            console.error('Error fetching posts:', error);
+        }
     });
 
     function addPostToDOM(post) {

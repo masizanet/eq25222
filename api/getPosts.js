@@ -15,6 +15,9 @@ export default async function handler(req, res) {
 
         // Read posts from GitHub
         const githubResponse = await fetch(`https://raw.githubusercontent.com/${repo}/main/${filePathInRepo}`);
+        if (!githubResponse.ok) {
+            throw new Error(`GitHub API responded with status ${githubResponse.status}`);
+        }
         const githubPosts = await githubResponse.json();
 
         // Merge posts
