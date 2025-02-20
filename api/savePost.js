@@ -19,7 +19,7 @@ export default async function handler(req, res) {
             tmpPosts.push({ ...post, id });
             await fs.writeFile(tmpFilePath, JSON.stringify(tmpPosts, null, 2));
 
-            // Push to GitHub
+            // Read posts from GitHub
             const githubToken = process.env.GITHUB_TOKEN;
             const repo = process.env.REPO;
             const filePathInRepo = 'contents/posts.json';
@@ -33,8 +33,15 @@ export default async function handler(req, res) {
             const sha = githubData.sha;
 
             const githubPosts = await fetch(`https://raw.githubusercontent.com/${repo}/main/${filePathInRepo}`).then(res => res.json());
-            githubPosts.push({ ...post, id });
 
+            // Merge posts
+            const mergedPosts = [...githubPosts, ...tmpPosts];
+
+            // Remove duplicates
+            const uniquePosts = Array.from(new Set(mergedPosts.map(post => post.id)))
+                .map(id => mergedPosts.find(post => post.id === id));
+
+            // Push merged posts to GitHub
             await fetch(`https://api.github.com/repos/${repo}/contents/${filePathInRepo}`, {
                 method: 'PUT',
                 headers: {
@@ -43,10 +50,14 @@ export default async function handler(req, res) {
                 },
                 body: JSON.stringify({
                     message: 'Add new post',
-                    content: Buffer.from(JSON.stringify(githubPosts)).toString('base64'),
+                    content: Buffer.from(JSON.stringify(uniquePosts)).toString('base64'),
                     sha: sha
                 })
             });
+
+            // Log data to console
+            console.log('Temporary Posts:', tmpPosts);
+            console.log('Merged Posts:', uniquePosts);
 
             res.status(200).json({ message: 'Post saved and pushed to GitHub' });
         } catch (error) {

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    postForm.addEventListener('submit', (e) => {
+    postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const nicknameInput = document.getElementById('nickname');
         const postContentInput = document.getElementById('postContent');
@@ -41,6 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
         gun.get('posts').get(timestamp).put(post);
         nicknameInput.value = '';
         postContentInput.value = '';
+
+        // Fetch and log data from getPosts
+        const response = await fetch('/api/getPosts');
+        const data = await response.json();
+        console.log('Fetched Posts:', data);
     });
 
     function addPostToDOM(post) {

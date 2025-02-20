@@ -21,7 +21,7 @@ export default async function handler(req, res) {
                 await fs.writeFile(tmpFilePath, JSON.stringify(tmpPosts, null, 2));
             }
 
-            // Push to GitHub
+            // Read posts from GitHub
             const githubToken = process.env.GITHUB_TOKEN;
             const repo = process.env.REPO;
             const filePathInRepo = 'contents/posts.json';
@@ -35,11 +35,15 @@ export default async function handler(req, res) {
             const sha = githubData.sha;
 
             const githubPosts = await fetch(`https://raw.githubusercontent.com/${repo}/main/${filePathInRepo}`).then(res => res.json());
-            const githubPostIndex = githubPosts.findIndex(post => post.id === id);
-            if (githubPostIndex > -1) {
-                githubPosts.splice(githubPostIndex, 1);
-            }
 
+            // Merge posts
+            const mergedPosts = [...githubPosts, ...tmpPosts];
+
+            // Remove duplicates
+            const uniquePosts = Array.from(new Set(mergedPosts.map(post => post.id)))
+                .map(id => mergedPosts.find(post => post.id === id));
+
+            // Push merged posts to GitHub
             await fetch(`https://api.github.com/repos/${repo}/contents/${filePathInRepo}`, {
                 method: 'PUT',
                 headers: {
@@ -48,7 +52,7 @@ export default async function handler(req, res) {
                 },
                 body: JSON.stringify({
                     message: 'Delete post',
-                    content: Buffer.from(JSON.stringify(githubPosts)).toString('base64'),
+                    content: Buffer.from(JSON.stringify(uniquePosts)).toString('base64'),
                     sha: sha
                 })
             });

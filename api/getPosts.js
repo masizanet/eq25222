@@ -27,6 +27,10 @@ export default async function handler(req, res) {
         // Sort posts by timestamp in descending order
         uniquePosts.sort((a, b) => b.timestamp - a.timestamp);
 
+        // Log data to console
+        console.log('Temporary Posts:', tmpPosts);
+        console.log('Merged Posts:', uniquePosts);
+
         res.status(200).json(uniquePosts);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching posts', error: error.message });
