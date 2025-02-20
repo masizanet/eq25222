@@ -3,9 +3,10 @@ body {
     background-color: #f0f0f0;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Changed from center to flex-start */
     height: 100vh;
     margin: 0;
+    overflow: auto; /* Added to enable scrolling */
 }
 
 #app {
@@ -15,6 +16,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 300px;
     text-align: center;
+    margin-top: 20px; /* Added margin-top for spacing */
 }
 
 #postForm {
@@ -45,6 +47,8 @@ body {
 #postsList {
     list-style-type: none;
     padding: 0;
+    max-height: 400px; /* Added max-height for the list */
+    overflow-y: auto; /* Added to enable scrolling within the list */
 }
 
 #postsList li {

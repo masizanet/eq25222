@@ -68,4 +68,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         postsMap.delete(id);
     }
+
+    // Sort posts by timestamp in descending order
+    function sortPosts() {
+        const postsArray = Array.from(postsMap.values());
+        postsArray.sort((a, b) => b.timestamp - a.timestamp);
+        postsList.innerHTML = '';
+        postsArray.forEach(post => addPostToDOM(post));
+    }
+
+    // Load posts from Gun and sort them
+    gun.get('posts').map().once((post, id) => {
+        if (post) {
+            postsMap.set(id, { ...post, id });
+        }
+    });
+
+    // Wait for posts to be loaded and then sort them
+    setTimeout(sortPosts, 1000);
 });
