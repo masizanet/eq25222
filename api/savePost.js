@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
             // Push to GitHub
             const githubToken = process.env.GITHUB_TOKEN;
-            const repo = 'YOUR_GITHUB_USERNAME/YOUR_REPOSITORY';
+            const repo = process.env.REPO;
             const filePathInRepo = 'contents/posts.json';
 
             const githubResponse = await fetch(`https://api.github.com/repos/${repo}/contents/${filePathInRepo}`, {

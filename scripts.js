@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const nicknames = new Set();
     const postsMap = new Map();
 
-    // Load posts from Gun
-    gun.get('posts').map().once((post, id) => {
+    // Load posts from Gun and listen for new posts
+    gun.get('posts').map().on((post, id) => {
         if (post) {
             addPostToDOM({ ...post, id });
         }
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save post to Gun
         const id = Gun.text.random();
         gun.get('posts').get(id).put(post);
-        addPostToDOM({ ...post, id });
         nicknameInput.value = '';
         postContentInput.value = '';
     });

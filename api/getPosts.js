@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 export default async function handler(req, res) {
     const tmpFilePath = path.join('/tmp', 'posts.json');
     const githubToken = process.env.GITHUB_TOKEN;
-    const repo = 'YOUR_GITHUB_USERNAME/YOUR_REPOSITORY';
+    const repo = process.env.REPO;
     const filePathInRepo = 'contents/posts.json';
 
     try {
