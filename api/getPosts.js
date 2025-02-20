@@ -1,4 +1,5 @@
 import Gun from 'gun';
+import 'gun/lib/path';
 
 export default async function handler(req, res) {
     const gun = Gun();
@@ -13,6 +14,8 @@ export default async function handler(req, res) {
 
         // Wait for posts to be loaded
         setTimeout(() => {
+            // Sort posts by timestamp in descending order
+            posts.sort((a, b) => b.timestamp - a.timestamp);
             res.status(200).json(posts);
         }, 1000);
     } catch (error) {

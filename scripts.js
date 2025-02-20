@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const postForm = document.getElementById('postForm');
     const postsList = document.getElementById('postsList');
     const nicknames = new Set();
+    const postsMap = new Map();
 
     // Load posts from Gun
     gun.get('posts').map().once((post, id) => {
@@ -35,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function addPostToDOM(post) {
+        if (postsMap.has(post.id)) return; // Prevent duplicate posts
+        postsMap.set(post.id, post);
+
         const postItem = document.createElement('li');
         postItem.textContent = `${post.nickname}: ${post.content}`;
         postItem.dataset.id = post.id;
@@ -43,7 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 deletePost(post.id);
             }
         });
-        postsList.appendChild(postItem);
+
+        // Insert the post at the top of the list
+        postsList.insertBefore(postItem, postsList.firstChild);
     }
 
     function deletePost(id) {
@@ -52,5 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (postItem) {
             postsList.removeChild(postItem);
         }
+        postsMap.delete(id);
     }
 });
