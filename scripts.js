@@ -42,6 +42,24 @@ document.addEventListener('DOMContentLoaded', () => {
         nicknameInput.value = '';
         postContentInput.value = '';
 
+        // Make a POST request to savePost endpoint
+        try {
+            const response = await fetch('/api/savePost', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(post)
+            });
+            if (!response.ok) {
+                throw new Error(`Server responded with status ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('Post saved:', data);
+        } catch (error) {
+            console.error('Error saving post:', error);
+        }
+
         // Fetch and log data from getPosts
         try {
             const response = await fetch('/api/getPosts');

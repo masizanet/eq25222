@@ -20,7 +20,7 @@ export default async function handler(req, res) {
             await fs.writeFile(tmpFilePath, JSON.stringify(tmpPosts, null, 2));
 
             // Log content of /tmp/posts.json
-            console.log('Content of /tmp/posts.json:', tmpPosts);
+            console.log('Content of /tmp/posts.json after saving:', tmpPosts);
 
             // Read posts from GitHub
             const githubToken = process.env.GITHUB_TOKEN;
