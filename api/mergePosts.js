@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import Gun from 'gun';
+import 'gun/lib/path';
 
 export default async function handler(req, res) {
     const gun = Gun();

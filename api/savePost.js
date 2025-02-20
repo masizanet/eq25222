@@ -1,4 +1,5 @@
 import Gun from 'gun';
+import 'gun/lib/path';
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
