@@ -1,3 +1,6 @@
+import { promises as fs } from 'fs';
+import path from 'path';
+import fetch from 'node-fetch';
 import Gun from 'gun';
 import 'gun/lib/path';
 
@@ -7,7 +10,50 @@ export default async function handler(req, res) {
             const { id } = req.query;
             const gun = Gun();
             gun.get('posts').get(id).put(null);
-            res.status(200).json({ message: 'Post deleted' });
+
+            // Update /tmp directory
+            const tmpFilePath = path.join('/tmp', 'posts.json');
+            const tmpData = await fs.readFile(tmpFilePath, 'utf8').catch(() => '[]');
+            const tmpPosts = JSON.parse(tmpData);
+            const postIndex = tmpPosts.findIndex(post => post.id === id);
+            if (postIndex > -1) {
+                tmpPosts.splice(postIndex, 1);
+                await fs.writeFile(tmpFilePath, JSON.stringify(tmpPosts, null, 2));
+            }
+
+            // Push to GitHub
+            const githubToken = process.env.GITHUB_TOKEN;
+            const repo = 'YOUR_GITHUB_USERNAME/YOUR_REPOSITORY';
+            const filePathInRepo = 'contents/posts.json';
+
+            const githubResponse = await fetch(`https://api.github.com/repos/${repo}/contents/${filePathInRepo}`, {
+                headers: {
+                    'Authorization': `token ${githubToken}`
+                }
+            });
+            const githubData = await githubResponse.json();
+            const sha = githubData.sha;
+
+            const githubPosts = await fetch(`https://raw.githubusercontent.com/${repo}/main/${filePathInRepo}`).then(res => res.json());
+            const githubPostIndex = githubPosts.findIndex(post => post.id === id);
+            if (githubPostIndex > -1) {
+                githubPosts.splice(githubPostIndex, 1);
+            }
+
+            await fetch(`https://api.github.com/repos/${repo}/contents/${filePathInRepo}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${githubToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: 'Delete post',
+                    content: Buffer.from(JSON.stringify(githubPosts)).toString('base64'),
+                    sha: sha
+                })
+            });
+
+            res.status(200).json({ message: 'Post deleted and pushed to GitHub' });
         } catch (error) {
             res.status(500).json({ message: 'Error deleting post', error: error.message });
         }
