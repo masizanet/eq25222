@@ -18,7 +18,12 @@ export default async function handler(req, res) {
         if (!githubResponse.ok) {
             throw new Error(`GitHub API responded with status ${githubResponse.status}`);
         }
-        const githubPosts = await githubResponse.json();
+        let githubPosts;
+        try {
+            githubPosts = await githubResponse.json();
+        } catch (error) {
+            githubPosts = [];
+        }
 
         // Merge posts
         const mergedPosts = [...githubPosts, ...tmpPosts];

@@ -35,7 +35,12 @@ export default async function handler(req, res) {
             const githubData = await githubResponse.json();
             const sha = githubData.sha;
 
-            const githubPosts = await fetch(`https://raw.githubusercontent.com/${repo}/main/${filePathInRepo}`).then(res => res.json());
+            let githubPosts;
+            try {
+                githubPosts = await fetch(`https://raw.githubusercontent.com/${repo}/main/${filePathInRepo}`).then(res => res.json());
+            } catch (error) {
+                githubPosts = [];
+            }
 
             // Merge posts
             const mergedPosts = [...githubPosts, ...tmpPosts];
