@@ -9,7 +9,16 @@ export default async function handler(req, res) {
         if (postIndex > -1) {
             posts.splice(postIndex, 1);
 
-            await fetch('https://api.github.com/repos/masizanet/eq25222/contents/posts.json', {
+            // Retrieve the SHA of the existing file
+            const shaResponse = await fetch('https://api.github.com/repos/masizanet/eq25222/contents/contents/posts.json', {
+                headers: {
+                    'Authorization': `token ${process.env.GITHUB_TOKEN}`
+                }
+            });
+            const shaData = await shaResponse.json();
+            const sha = shaData.sha;
+
+            await fetch('https://api.github.com/repos/masizanet/eq25222/contents/contents/posts.json', {
                 method: 'PUT',
                 headers: {
                     'Authorization': `token ${process.env.GITHUB_TOKEN}`,
@@ -18,7 +27,7 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     message: 'Delete post',
                     content: Buffer.from(JSON.stringify(posts)).toString('base64'),
-                    sha: 'SHA_OF_THE_EXISTING_FILE'
+                    sha: sha
                 })
             });
 
