@@ -1,14 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const gun = Gun();
     const postForm = document.getElementById('postForm');
     const postsList = document.getElementById('postsList');
     const nicknames = new Set();
 
-    // Load posts from serverless function
-    fetch('/api/getPosts')
-        .then(response => response.json())
-        .then(posts => {
-            posts.forEach(addPostToDOM);
-        });
+    // Load posts from Gun
+    gun.get('posts').map().once((post, id) => {
+        if (post) {
+            addPostToDOM({ ...post, id });
+        }
+    });
 
     postForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -23,20 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         nicknames.add(nickname);
-        const post = { nickname, content: postContent, id: Date.now() };
+        const post = { nickname, content: postContent, timestamp: Date.now() };
 
-        // Save post to serverless function
-        fetch('/api/savePost', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(post)
-        }).then(() => {
-            addPostToDOM(post);
-            nicknameInput.value = '';
-            postContentInput.value = '';
-        });
+        // Save post to Gun
+        const id = Gun.text.random();
+        gun.get('posts').get(id).put(post);
+        addPostToDOM({ ...post, id });
+        nicknameInput.value = '';
+        postContentInput.value = '';
     });
 
     function addPostToDOM(post) {
@@ -52,12 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deletePost(id) {
-        fetch(`/api/deletePost?id=${id}`, { method: 'DELETE' })
-            .then(() => {
-                const postItem = postsList.querySelector(`[data-id="${id}"]`);
-                if (postItem) {
-                    postsList.removeChild(postItem);
-                }
-            });
+        gun.get('posts').get(id).put(null);
+        const postItem = postsList.querySelector(`[data-id="${id}"]`);
+        if (postItem) {
+            postsList.removeChild(postItem);
+        }
     }
 });
