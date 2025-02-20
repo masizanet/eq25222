@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 export default async function handler(req, res) {
-    const filePath = path.join('/tmp', 'posts.json');
+    const filePath = path.join('/tmp', 'merged-posts.json');
     try {
         const data = await fs.readFile(filePath, 'utf8');
         const posts = JSON.parse(data);

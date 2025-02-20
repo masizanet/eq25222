@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const postsList = document.getElementById('postsList');
     const nicknames = new Set();
 
-    // Load posts from Gun
-    gun.get('posts').map().once((post, id) => {
-        if (post) {
-            addPostToDOM({ ...post, id });
-        }
-    });
+    // Load posts from serverless function
+    fetch('/api/getPosts')
+        .then(response => response.json())
+        .then(posts => {
+            posts.forEach(addPostToDOM);
+        });
 
     postForm.addEventListener('submit', (e) => {
         e.preventDefault();
