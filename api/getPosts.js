@@ -28,6 +28,9 @@ export default async function handler(req, res) {
             githubPosts = [];
         }
 
+        // Log content of GitHub posts
+        console.log('Content of GitHub posts:', githubPosts);
+
         // Merge posts
         const mergedPosts = [...githubPosts, ...tmpPosts];
 

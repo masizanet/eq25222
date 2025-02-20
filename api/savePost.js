@@ -45,6 +45,9 @@ export default async function handler(req, res) {
                 githubPosts = [];
             }
 
+            // Log content of GitHub posts
+            console.log('Content of GitHub posts:', githubPosts);
+
             // Merge posts
             const mergedPosts = [...githubPosts, ...tmpPosts];
 
@@ -53,7 +56,7 @@ export default async function handler(req, res) {
                 .map(id => mergedPosts.find(post => post.id === id));
 
             // Push merged posts to GitHub
-            await fetch(`https://api.github.com/repos/${repo}/contents/${filePathInRepo}`, {
+            const pushResponse = await fetch(`https://api.github.com/repos/${repo}/contents/${filePathInRepo}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `token ${githubToken}`,
@@ -65,6 +68,9 @@ export default async function handler(req, res) {
                     sha: sha
                 })
             });
+            if (!pushResponse.ok) {
+                throw new Error(`GitHub API responded with status ${pushResponse.status}`);
+            }
 
             // Log data to console
             console.log('Temporary Posts:', tmpPosts);
