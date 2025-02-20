@@ -4,7 +4,7 @@ import Gun from 'gun';
 
 export default async function handler(req, res) {
     const gun = Gun();
-    const filePath = path.join('/tmp', 'posts.json');
+    const filePath = path.join('/tmp', 'merged-posts.json');
 
     try {
         // Load posts from Gun
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         });
 
         // Load posts from server-side file
-        const data = await fs.readFile(filePath, 'utf8');
+        const data = await fs.readFile(filePath, 'utf8').catch(() => '[]');
         const serverPosts = JSON.parse(data);
 
         // Merge posts
