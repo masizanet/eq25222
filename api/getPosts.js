@@ -13,6 +13,9 @@ export default async function handler(req, res) {
         const tmpData = await fs.readFile(tmpFilePath, 'utf8').catch(() => '[]');
         const tmpPosts = JSON.parse(tmpData);
 
+        // Log content of /tmp/posts.json
+        console.log('Content of /tmp/posts.json:', tmpPosts);
+
         // Read posts from GitHub
         const githubResponse = await fetch(`https://raw.githubusercontent.com/${repo}/main/${filePathInRepo}`);
         if (!githubResponse.ok) {

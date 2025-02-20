@@ -19,6 +19,9 @@ export default async function handler(req, res) {
             tmpPosts.push({ ...post, id });
             await fs.writeFile(tmpFilePath, JSON.stringify(tmpPosts, null, 2));
 
+            // Log content of /tmp/posts.json
+            console.log('Content of /tmp/posts.json:', tmpPosts);
+
             // Read posts from GitHub
             const githubToken = process.env.GITHUB_TOKEN;
             const repo = process.env.REPO;
