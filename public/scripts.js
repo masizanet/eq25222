@@ -2,13 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const gun = Gun();
     const postForm = document.getElementById('postForm');
     const postsList = document.getElementById('postsList');
-    const nicknames = new Set();
+    const authors = new Set();
     const postsMap = new Map();
 
-    // Load saved nickname
-    const savedNickname = localStorage.getItem('nickname');
-    if (savedNickname) {
-        document.getElementById('nickname').value = savedNickname;
+    // Load saved author
+    const savedAuthor = localStorage.getItem('author');
+    if (savedAuthor) {
+        document.getElementById('author').value = savedAuthor;
     }
 
     // Load posts from Gun and listen for new posts
@@ -20,26 +20,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const nicknameInput = document.getElementById('nickname');
+        const authorInput = document.getElementById('author');
         const postContentInput = document.getElementById('postContent');
-        let nickname = nicknameInput.value.trim();
+        let author = authorInput.value.trim();
         const postContent = postContentInput.value.trim();
 
-        // Save nickname to local storage
-        localStorage.setItem('nickname', nickname);
+        // Save author to local storage
+        localStorage.setItem('author', author);
 
-        if (nicknames.has(nickname)) {
-            nickname = `${nickname}_${Math.floor(Math.random() * 1000)}`;
-            alert(`닉네임이 이미 사용 중입니다. 추천 닉네임: ${nickname}`);
+        if (authors.has(author)) {
+            author = `${author}_${Math.floor(Math.random() * 1000)}`;
+            alert(`작성자가 이미 사용 중입니다. 추천 작성자: ${author}`);
         }
 
-        nicknames.add(nickname);
+        authors.add(author);
         const timestamp = Date.now();
-        const post = { nickname, content: postContent, timestamp };
+        const post = { author, content: postContent, timestamp };
 
         // Save post to Gun
         gun.get('posts').get(timestamp).put(post);
-        nicknameInput.value = '';
+        authorInput.value = '';
         postContentInput.value = '';
 
         // Make a POST request to savePost endpoint
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         postsMap.set(post.id, post);
 
         const postItem = document.createElement('li');
-        postItem.textContent = `${post.nickname}: ${post.content}`;
+        postItem.textContent = `${post.author}: ${post.content}`;
         postItem.dataset.id = post.id;
         postItem.addEventListener('click', () => {
             if (confirm('이 게시물을 삭제하시겠습니까?')) {
