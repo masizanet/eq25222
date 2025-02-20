@@ -10,7 +10,9 @@
     <div id="app">
         <h1>익명 게시판</h1>
         <form id="postForm">
-            <input type="text" id="author" placeholder="작성자" maxlength="20" required>
+						<label for="author">작성자</label>
+            <input type="text" id="author" placeholder="이름 혹은 별명" maxlength="20" required>
+						<label for="author">내용</label>
             <input type="text" id="postContent" placeholder="내용 (최대 50자)" maxlength="50" required>
             <button type="submit">게시</button>
         </form>

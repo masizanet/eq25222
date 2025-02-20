@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(post)
+                body: JSON.stringify({ author, content: postContent, timestamp })
             });
             if (!response.ok) {
                 throw new Error(`Server responded with status ${response.status}`);

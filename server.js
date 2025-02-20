@@ -10,7 +10,13 @@ const port = process.env.PORT || 3000;
 // Set up SQLite database
 const db = new sqlite3.Database(':memory:');
 db.serialize(() => {
-    db.run('CREATE TABLE posts (id TEXT PRIMARY KEY, author TEXT, content TEXT, timestamp INTEGER)');
+    db.run('CREATE TABLE posts (id TEXT PRIMARY KEY, author TEXT, content TEXT, timestamp INTEGER)', (err) => {
+        if (err) {
+            console.error('Error creating table:', err.message);
+        } else {
+            console.log('Table created successfully');
+        }
+    });
 });
 
 // Set up Gun.js
@@ -30,6 +36,7 @@ app.post('/api/savePost', (req, res) => {
 
     db.run('INSERT INTO posts (id, author, content, timestamp) VALUES (?, ?, ?, ?)', [id, author, content, timestamp], (err) => {
         if (err) {
+            console.error('Error saving post:', err.message);
             return res.status(500).json({ message: 'Error saving post', error: err.message });
         }
 
@@ -44,6 +51,7 @@ app.post('/api/savePost', (req, res) => {
 app.get('/api/getPosts', (req, res) => {
     db.all('SELECT * FROM posts ORDER BY timestamp DESC', (err, rows) => {
         if (err) {
+            console.error('Error fetching posts:', err.message);
             return res.status(500).json({ message: 'Error fetching posts', error: err.message });
         }
 
@@ -57,6 +65,7 @@ app.delete('/api/deletePost', (req, res) => {
 
     db.run('DELETE FROM posts WHERE id = ?', [id], (err) => {
         if (err) {
+            console.error('Error deleting post:', err.message);
             return res.status(500).json({ message: 'Error deleting post', error: err.message });
         }
 
