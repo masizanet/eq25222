@@ -21,7 +21,7 @@ app.use(session({
 
 // 데이터베이스 초기화
 db.serialize(() => {
-  db.run("CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, nickname TEXT, content TEXT, timestamp INTEGER, original_content TEXT)");
+  db.run("CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, nickname TEXT, content TEXT, timestamp INTEGER, blocked BOOLEAN)");
   db.run("CREATE TABLE IF NOT EXISTS keywords (keyword TEXT PRIMARY KEY)");
 });
 
@@ -40,15 +40,14 @@ app.post('/posts', (req, res) => {
   let { id, nickname, content, timestamp } = req.body;
 
   // 필터링 키워드 검사 및 대체
-  let filteredContent = content;
   for (let keyword of filterKeywords) {
     const regex = new RegExp(keyword, 'gi');
     const replacement = '*'.repeat(keyword.length);
-    filteredContent = filteredContent.replace(regex, replacement);
+    content = content.replace(regex, replacement);
   }
 
-  const stmt = db.prepare("INSERT INTO posts (id, nickname, content, timestamp, original_content) VALUES (?, ?, ?, ?, ?)");
-  stmt.run(id, nickname, filteredContent, timestamp, content, (err) => {
+  const stmt = db.prepare("INSERT INTO posts (id, nickname, content, timestamp, blocked) VALUES (?, ?, ?, ?, ?)");
+  stmt.run(id, nickname, content, timestamp, false, (err) => {
     if (err) {
       return res.status(500).send("포스트 저장 중 오류 발생");
     }
@@ -81,7 +80,7 @@ app.delete('/posts/:id', (req, res) => {
 // 포스트 차단 API 엔드포인트
 app.put('/posts/:id/block', (req, res) => {
   const { id } = req.params;
-  db.run("UPDATE posts SET content = ?, original_content = content WHERE id = ?", ["이 글은 관리자에 의해 차단되었습니다", id], (err) => {
+  db.run("UPDATE posts SET blocked = ? WHERE id = ?", [true, id], (err) => {
     if (err) {
       return res.status(500).send("포스트 차단 중 오류 발생");
     }
@@ -92,7 +91,7 @@ app.put('/posts/:id/block', (req, res) => {
 // 포스트 원문 조회 API 엔드포인트
 app.get('/posts/:id/original', adminAuth, (req, res) => {
   const { id } = req.params;
-  db.get("SELECT original_content FROM posts WHERE id = ?", id, (err, row) => {
+  db.get("SELECT content FROM posts WHERE id = ?", id, (err, row) => {
     if (err) {
       return res.status(500).send("포스트 조회 중 오류 발생");
     }
