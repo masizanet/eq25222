@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인</title>
+</head>
+<body>
+  <h1>로그인</h1>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="아이디" required>
+    <input type="password" id="password" placeholder="비밀번호" required>
+    <button type="submit">로그인</button>
+  </form>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(text => { throw new Error(text) });
+        }
+        return response.text();
+      })
+      .then(data => {
+        alert(data);
+        window.location.href = '/admin';
+      })
+      .catch(error => {
+        alert('오류: ' + error.message);
+        console.error('오류:', error);
+      });
+    });
+  </script>
+</body>
+</html>

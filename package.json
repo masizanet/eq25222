@@ -1,0 +1,15 @@
+{
+  "name": "equalkorea25",
+  "version": "1.0.0",
+  "description": "간단한 포스트 공유 애플리케이션",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.18.1",
+    "sqlite3": "^5.0.0"
+  }
+}

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>키워드 관리</title>
+</head>
+<body>
+  <h1>키워드 관리</h1>
+  <nav>
+    <a href="/admin/posts">포스트 관리</a>
+  </nav>
+  <div>
+    <input type="text" id="searchKeyword" placeholder="검색어 입력" oninput="searchKeywords()">
+    <button onclick="searchKeywords()">검색</button>
+    <button id="addKeywordButton" onclick="addKeyword()" style="display:none;">추가</button>
+  </div>
+  <div id="filterButtons"></div>
+  <div id="keywords"></div>
+  <textarea id="bulkKeywords" placeholder="여러 키워드를 쉼표로 구분하여 입력"></textarea>
+  <button onclick="addBulkKeywords()">대량 추가</button>
+  <script src="/admin/admin_keywords.js"></script>
+</body>
+</html>
