@@ -19,12 +19,6 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// 데이터베이스 초기화
-db.serialize(() => {
-  db.run("CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, nickname TEXT, content TEXT, timestamp INTEGER, blocked BOOLEAN)");
-  db.run("CREATE TABLE IF NOT EXISTS keywords (keyword TEXT PRIMARY KEY)");
-});
-
 // 필터링 키워드 목록을 데이터베이스에서 로드
 let filterKeywords = [];
 db.all("SELECT keyword FROM keywords", (err, rows) => {
@@ -37,18 +31,22 @@ db.all("SELECT keyword FROM keywords", (err, rows) => {
 
 // 포스트 생성 API 엔드포인트
 app.post('/posts', (req, res) => {
+  console.log('POST /posts 요청 수신:', req.body); // 요청 로그 추가
   let { id, nickname, content, timestamp } = req.body;
 
-  // 필터링 키워드 검사 및 대체
+  // 필터링 키워드 검사
+  let warning = false;
   for (let keyword of filterKeywords) {
-    const regex = new RegExp(keyword, 'gi');
-    const replacement = '*'.repeat(keyword.length);
-    content = content.replace(regex, replacement);
+    if (content.includes(keyword)) {
+      warning = true;
+      break;
+    }
   }
 
-  const stmt = db.prepare("INSERT INTO posts (id, nickname, content, timestamp, blocked) VALUES (?, ?, ?, ?, ?)");
-  stmt.run(id, nickname, content, timestamp, false, (err) => {
+  const stmt = db.prepare("INSERT INTO posts (id, nickname, content, timestamp, blocked, warning) VALUES (?, ?, ?, ?, ?, ?)");
+  stmt.run(id, nickname, content, timestamp, false, warning, (err) => {
     if (err) {
+      console.error('포스트 저장 중 오류 발생:', err); // 오류 로그 추가
       return res.status(500).send("포스트 저장 중 오류 발생");
     }
     res.status(200).send("포스트 저장 완료");
@@ -62,6 +60,16 @@ app.get('/posts', (req, res) => {
     if (err) {
       return res.status(500).send("포스트 조회 중 오류 발생");
     }
+
+    // 필터링 키워드 검사 및 대체
+    rows.forEach(post => {
+      for (let keyword of filterKeywords) {
+        const regex = new RegExp(keyword, 'gi');
+        const replacement = '*'.repeat(keyword.length);
+        post.content = post.content.replace(regex, replacement);
+      }
+    });
+
     res.status(200).json(rows);
   });
 });
@@ -115,6 +123,11 @@ app.post('/login', (req, res) => {
   }
 });
 
+// 로그인 성공 후 포스트 관리 페이지로 리다이렉트
+app.get('/admin', adminAuth, (req, res) => {
+  res.redirect('/admin/posts');
+});
+
 // 로그아웃 처리
 app.post('/logout', (req, res) => {
   req.session.destroy();
@@ -132,17 +145,19 @@ function adminAuth(req, res, next) {
 
 // 관리자 페이지 제공
 app.get('/admin', adminAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin/index.html'));
+  res.redirect('/admin/posts'); // 로그인 후 포스트 관리 페이지로 리다이렉트
 });
 
-// 키워드 관리 페이지 제공
+app.get('/admin/posts', adminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin/admin_posts.html'));
+});
+
 app.get('/admin/keywords', adminAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin/admin_keywords.html'));
 });
 
-// 포스트 관리 페이지 제공
-app.get('/admin/posts', adminAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin/admin_posts.html'));
+app.get('/admin/settings', adminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin/admin_settings.html'));
 });
 
 // 필터링 키워드 조회 API 엔드포인트
@@ -185,6 +200,25 @@ app.delete('/keywords', adminAuth, (req, res) => {
   } else {
     res.status(400).send("존재하지 않는 키워드입니다.");
   }
+});
+
+// 데이터베이스 초기화 엔드포인트
+app.post('/admin/reset-database', adminAuth, (req, res) => {
+  db.serialize(() => {
+    db.run("DROP TABLE IF EXISTS posts", (err) => {
+      if (err) {
+        console.error('posts 테이블 삭제 중 오류 발생:', err);
+        return res.status(500).send("posts 테이블 삭제 중 오류 발생");
+      }
+      db.run("CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, nickname TEXT, content TEXT, timestamp INTEGER, blocked BOOLEAN DEFAULT 0, warning BOOLEAN DEFAULT 0)", (err) => {
+        if (err) {
+          console.error('posts 테이블 생성 중 오류 발생:', err);
+          return res.status(500).send("posts 테이블 생성 중 오류 발생");
+        }
+        res.status(200).send("데이터베이스 초기화 완료");
+      });
+    });
+  });
 });
 
 const PORT = process.env.PORT || 3000;

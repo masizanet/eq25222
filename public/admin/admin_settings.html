@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 설정</title>
+</head>
+<body>
+  <h1>관리자 설정</h1>
+  <nav>
+    <a href="/admin/posts">포스트 관리</a>
+    <a href="/admin/keywords">키워드 관리</a>
+    <a href="/admin/settings">설정</a>
+  </nav>
+  <button onclick="resetDatabase()">데이터베이스 초기화</button>
+  <script>
+    function resetDatabase() {
+      if (confirm('정말로 데이터베이스를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        fetch('/admin/reset-database', {
+          method: 'POST'
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.text().then(text => { throw new Error(text) });
+          }
+          return response.text();
+        })
+        .then(data => {
+          alert(data);
+          location.reload();
+        })
+        .catch(error => {
+          alert('오류: ' + error.message);
+          console.error('오류:', error);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

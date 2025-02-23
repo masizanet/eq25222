@@ -10,24 +10,12 @@ function loadPosts() {
       const postsDiv = document.getElementById('posts');
       postsDiv.innerHTML = '';
       posts.forEach(post => {
-        const filteredContent = filterContent(post.content);
+        const warningText = post.warning ? ' (경고: 부적절한 내용 포함)' : '';
         const postDiv = document.createElement('div');
-        postDiv.innerHTML = `<p><strong>${post.nickname}</strong>: ${filteredContent} <button onclick="deletePost('${post.id}')">삭제</button></p>`;
+        postDiv.innerHTML = `<p><strong>${post.nickname}</strong>: ${post.content}${warningText} <button onclick="deletePost('${post.id}')">삭제</button></p>`;
         postsDiv.appendChild(postDiv);
       });
     });
-}
-
-function filterContent(content) {
-  const filterKeywords = [
-    // ... 금지어 목록 ...
-  ];
-  filterKeywords.forEach(keyword => {
-    const regex = new RegExp(keyword, 'gi');
-    const replacement = '*'.repeat(keyword.length);
-    content = content.replace(regex, replacement);
-  });
-  return content;
 }
 
 function generateUUID() {
@@ -47,8 +35,7 @@ function addPost() {
     timestamp: Date.now()
   };
 
-  // 로컬 스토리지에 원문 포스트 저장
-  localStorage.setItem(post.id, JSON.stringify(post));
+  console.log('POST 요청 전송:', post); // 요청 로그 추가
 
   fetch('/posts', {
     method: 'POST',
@@ -64,6 +51,7 @@ function addPost() {
     return response.text();
   })
   .then(data => {
+    console.log('POST 응답 수신:', data); // 응답 로그 추가
     document.getElementById('content').value = ''; // 입력 필드 비우기
     loadPosts();
   })
