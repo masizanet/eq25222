@@ -5,14 +5,10 @@ function generateUUID() {
   });
 }
 
-function filterContent(content) {
-  const filterKeywords = [
-    // ... 금지어 목록 ...
-  ];
-  filterKeywords.forEach(keyword => {
-    const regex = new RegExp(keyword, 'gi');
-    const replacement = '*'.repeat(keyword.length);
-    content = content.replace(regex, replacement);
-  });
-  return content;
+function safeParseJSON(json) {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    return null;
+  }
 }

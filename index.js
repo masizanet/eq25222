@@ -4,12 +4,14 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const dotenv = require('dotenv');
 const session = require('express-session');
+const cors = require('cors'); // CORS 모듈 추가
 
 dotenv.config();
 
 const app = express();
 const db = new sqlite3.Database('./database.sqlite'); // 파일로 데이터베이스 저장
 
+app.use(cors()); // CORS 설정 추가
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'scripts')));
@@ -74,6 +76,16 @@ app.get('/posts', (req, res) => {
   });
 });
 
+// 관리자용 모든 포스트 조회 API 엔드포인트
+app.get('/admin/posts/data', adminAuth, (req, res) => {
+  db.all("SELECT * FROM posts ORDER BY timestamp DESC", (err, rows) => {
+    if (err) {
+      return res.status(500).send("포스트 조회 중 오류 발생");
+    }
+    res.status(200).json(rows);
+  });
+});
+
 // 포스트 삭제 API 엔드포인트
 app.delete('/posts/:id', (req, res) => {
   const { id } = req.params;
@@ -93,6 +105,17 @@ app.put('/posts/:id/block', (req, res) => {
       return res.status(500).send("포스트 차단 중 오류 발생");
     }
     res.status(200).send("포스트 차단 완료");
+  });
+});
+
+// 포스트 복원 API 엔드포인트
+app.put('/posts/:id/unblock', (req, res) => {
+  const { id } = req.params;
+  db.run("UPDATE posts SET blocked = ? WHERE id = ?", [false, id], (err) => {
+    if (err) {
+      return res.status(500).send("포스트 복원 중 오류 발생");
+    }
+    res.status(200).send("포스트 복원 완료");
   });
 });
 

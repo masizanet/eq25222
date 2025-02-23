@@ -1,5 +1,15 @@
+let filterKeywords = [];
+
+function loadFilterKeywords() {
+  return fetch('/keywords')
+    .then(response => response.json())
+    .then(keywords => {
+      filterKeywords = keywords;
+    });
+}
+
 function loadPosts() {
-  fetch('/posts')
+  fetch('/admin/posts/data')
     .then(response => {
       if (response.status === 401) {
         window.location.href = '/login';
@@ -10,9 +20,10 @@ function loadPosts() {
       const postsDiv = document.getElementById('posts');
       postsDiv.innerHTML = '';
       posts.forEach(post => {
-        if (post.content !== "이 글은 관리자가 차단하였습니다") {
+        if (!post.blocked) {
           const postDiv = document.createElement('div');
-          postDiv.innerHTML = `<p><strong>${post.nickname}</strong>: ${post.content} <button onclick="blockPost('${post.id}')">차단</button> <button onclick="deletePost('${post.id}')">삭제</button></p>`;
+          const highlightedContent = highlightKeywords(post.content);
+          postDiv.innerHTML = `<p><strong>${post.nickname}</strong>: ${highlightedContent} <button onclick="blockPost('${post.id}')">차단</button></p>`;
           postsDiv.appendChild(postDiv);
         }
       });
@@ -20,30 +31,26 @@ function loadPosts() {
 }
 
 function loadBlockedPosts() {
-  fetch('/posts')
+  fetch('/admin/posts/data')
     .then(response => response.json())
     .then(posts => {
       const postsDiv = document.getElementById('blockedPosts');
       postsDiv.innerHTML = '';
-      posts.filter(post => post.content === "이 글은 관리자에 의해 차단되었습니다").forEach(post => {
-        fetch(`/posts/${post.id}/original`)
-          .then(response => response.json())
-          .then(originalPost => {
-            const postDiv = document.createElement('div');
-            const highlightedContent = highlightKeywords(originalPost.original_content);
-            postDiv.innerHTML = `<p><strong>${post.nickname}</strong>: ${highlightedContent} <button onclick="deletePost('${post.id}')">삭제</button></p>`;
-            postsDiv.appendChild(postDiv);
-          });
+      posts.filter(post => post.blocked).forEach(post => {
+        const postDiv = document.createElement('div');
+        const highlightedContent = highlightKeywords(post.content);
+        postDiv.innerHTML = `<p><strong>${post.nickname}</strong>: ${highlightedContent} <button onclick="unblockPost('${post.id}')">복원</button> <button onclick="deletePost('${post.id}')">삭제</button></p>`;
+        postsDiv.appendChild(postDiv);
       });
     });
 }
 
 function highlightKeywords(content) {
-  const filterKeywords = [
-    // ... 금지어 목록 ...
-  ];
   filterKeywords.forEach(keyword => {
     const regex = new RegExp(`(${keyword})`, 'gi');
+    if (regex.test(content)) {
+      console.log(`금기어 "${keyword}"가 포함된 포스트: ${content}`);
+    }
     content = content.replace(regex, '<span class="highlight">$1</span>');
   });
   return content;
@@ -51,6 +58,24 @@ function highlightKeywords(content) {
 
 function blockPost(id) {
   fetch(`/posts/${id}/block`, {
+    method: 'PUT'
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.text().then(text => { throw new Error(text) });
+    }
+    return response.text();
+  })
+  .then(data => {
+    console.log(data);
+    loadPosts();
+    loadBlockedPosts();
+  })
+  .catch(error => console.error('오류:', error));
+}
+
+function unblockPost(id) {
+  fetch(`/posts/${id}/unblock`, {
     method: 'PUT'
   })
   .then(response => {
@@ -124,6 +149,8 @@ function addPost() {
 }
 
 window.onload = () => {
-  loadPosts();
-  loadBlockedPosts();
+  loadFilterKeywords().then(() => {
+    loadPosts();
+    loadBlockedPosts();
+  });
 };
